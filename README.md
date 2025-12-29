@@ -24,7 +24,7 @@ Requirements:
 
 We'll first need to build the dependencies, and then the C# project.
 
-```console
+```sh
 # Navigate to project's `tree-sitter` directory.
 cd <project>/tree-sitter
 
