@@ -12,23 +12,27 @@ using System.Runtime.InteropServices;
 
 namespace GitHub.TreeSitter
 {
-    public enum TSInputEncoding {
+    public enum TSInputEncoding
+    {
         TSInputEncodingUTF8,
         TSInputEncodingUTF16
     }
 
-    public enum TSSymbolType {
+    public enum TSSymbolType
+    {
         TSSymbolTypeRegular,
         TSSymbolTypeAnonymous,
         TSSymbolTypeAuxiliary,
     }
 
-    public enum TSLogType {
+    public enum TSLogType
+    {
         TSLogTypeParse,
         TSLogTypeLex,
     }
 
-    public enum TSQuantifier {
+    public enum TSQuantifier
+    {
         TSQuantifierZero = 0, // must match the array initialization value
         TSQuantifierZeroOrOne,
         TSQuantifierZeroOrMore,
@@ -36,13 +40,15 @@ namespace GitHub.TreeSitter
         TSQuantifierOneOrMore,
     }
 
-    public  enum TSQueryPredicateStepType {
+    public enum TSQueryPredicateStepType
+    {
         TSQueryPredicateStepTypeDone,
         TSQueryPredicateStepTypeCapture,
         TSQueryPredicateStepTypeString,
     }
 
-    public enum TSQueryError {
+    public enum TSQueryError
+    {
         TSQueryErrorNone = 0,
         TSQueryErrorSyntax,
         TSQueryErrorNodeType,
@@ -75,7 +81,7 @@ namespace GitHub.TreeSitter
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct TSInputEdit 
+    public struct TSInputEdit
     {
         public uint start_byte;
         public uint old_end_byte;
@@ -125,7 +131,8 @@ namespace GitHub.TreeSitter
 
         public void Dispose()
         {
-            if (Ptr != IntPtr.Zero) {
+            if (Ptr != IntPtr.Zero)
+            {
                 ts_parser_delete(Ptr);
                 Ptr = IntPtr.Zero;
             }
@@ -133,32 +140,37 @@ namespace GitHub.TreeSitter
 
         public bool set_language(TSLanguage language) { return ts_parser_set_language(Ptr, language.Ptr); }
 
-        public TSLanguage language() { 
+        public TSLanguage language()
+        {
             var ptr = ts_parser_language(Ptr);
-            return ptr != IntPtr.Zero ? new TSLanguage(ptr) : null; 
+            return ptr != IntPtr.Zero ? new TSLanguage(ptr) : null;
         }
 
-        public bool set_included_ranges(TSRange[] ranges) { 
-            return ts_parser_set_included_ranges(Ptr, ranges, (uint)ranges.Length); 
+        public bool set_included_ranges(TSRange[] ranges)
+        {
+            return ts_parser_set_included_ranges(Ptr, ranges, (uint)ranges.Length);
         }
-        public TSRange[] included_ranges() { 
+        public TSRange[] included_ranges()
+        {
             uint length;
             return ts_parser_included_ranges(Ptr, out length);
         }
 
-        public TSTree parse_string(TSTree oldTree, string input) { 
-            var ptr = ts_parser_parse_string_encoding(Ptr, oldTree != null ? oldTree.Ptr : IntPtr.Zero, 
+        public TSTree parse_string(TSTree oldTree, string input)
+        {
+            var ptr = ts_parser_parse_string_encoding(Ptr, oldTree != null ? oldTree.Ptr : IntPtr.Zero,
                                                         input, (uint)input.Length * 2, TSInputEncoding.TSInputEncodingUTF16);
-            return ptr != IntPtr.Zero ? new TSTree(ptr) : null; 
+            return ptr != IntPtr.Zero ? new TSTree(ptr) : null;
         }
 
         public void reset() { ts_parser_reset(Ptr); }
-        public void set_timeout_micros(ulong timeout) { ts_parser_set_timeout_micros(Ptr,timeout); }
+        public void set_timeout_micros(ulong timeout) { ts_parser_set_timeout_micros(Ptr, timeout); }
         public ulong timeout_micros() { return ts_parser_timeout_micros(Ptr); }
-        public void set_logger(TSLogger logger) { 
+        public void set_logger(TSLogger logger)
+        {
             var code = new _TSLoggerCode(logger);
             var data = new _TSLoggerData { Log = logger != null ? new TSLogCallback(code.LogCallback) : null };
-            ts_parser_set_logger(Ptr, data); 
+            ts_parser_set_logger(Ptr, data);
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -171,7 +183,7 @@ namespace GitHub.TreeSitter
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void TSLogCallback(IntPtr payload, TSLogType logType, [MarshalAs(UnmanagedType.LPUTF8Str)] string message);
 
-        private class _TSLoggerCode 
+        private class _TSLoggerCode
         {
             private TSLogger logger;
 
@@ -186,7 +198,7 @@ namespace GitHub.TreeSitter
             }
         }
 
-#region PInvoke
+        #region PInvoke
         [DllImport("tree-sitter-cpp.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr tree_sitter_cpp();
 
@@ -337,8 +349,8 @@ namespace GitHub.TreeSitter
         */
         [DllImport("tree-sitter.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void ts_parser_set_logger(IntPtr parser, _TSLoggerData logger);
-#endregion
-    }            
+        #endregion
+    }
 
     /******************/
     /* Section - Tree */
@@ -355,24 +367,27 @@ namespace GitHub.TreeSitter
 
         public void Dispose()
         {
-            if (Ptr != IntPtr.Zero) {
+            if (Ptr != IntPtr.Zero)
+            {
                 ts_tree_delete(Ptr);
                 Ptr = IntPtr.Zero;
             }
         }
 
-        public TSTree copy() { 
+        public TSTree copy()
+        {
             var ptr = ts_tree_copy(Ptr);
-            return ptr != IntPtr.Zero ? new TSTree(ptr) : null; 
+            return ptr != IntPtr.Zero ? new TSTree(ptr) : null;
         }
         public TSNode root_node() { return ts_tree_root_node(Ptr); }
         public TSNode root_node_with_offset(uint offsetBytes, TSPoint offsetPoint) { return ts_tree_root_node_with_offset(Ptr, offsetBytes, offsetPoint); }
-        public TSLanguage language() { 
+        public TSLanguage language()
+        {
             var ptr = ts_tree_language(Ptr);
             return ptr != IntPtr.Zero ? new TSLanguage(ptr) : null;
         }
         public void edit(TSInputEdit edit) { ts_tree_edit(Ptr, ref edit); }
-#region PInvoke
+        #region PInvoke
         /**
         * Create a shallow copy of the syntax tree. This is very fast.
         *
@@ -444,7 +459,7 @@ namespace GitHub.TreeSitter
         */
         [DllImport("tree-sitter.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr ts_tree_get_changed_ranges(IntPtr old_tree, IntPtr new_tree, out uint length);
-#endregion            
+        #endregion
     }
 
     /******************/
@@ -463,7 +478,7 @@ namespace GitHub.TreeSitter
         public void clear() { id = IntPtr.Zero; tree = IntPtr.Zero; }
         public bool is_zero() { return (id == IntPtr.Zero && tree == IntPtr.Zero); }
         public string type() { return Marshal.PtrToStringAnsi(ts_node_type(this)); }
-        public string type(TSLanguage lang) { return lang.symbol_name(symbol());}
+        public string type(TSLanguage lang) { return lang.symbol_name(symbol()); }
         public ushort symbol() { return ts_node_symbol(this); }
         public uint start_offset() { return ts_node_start_byte(this) / sizeof(ushort); }
         public TSPoint start_point() { var pt = ts_node_start_point(this); return new TSPoint(pt.row, pt.column / sizeof(ushort)); }
@@ -483,7 +498,7 @@ namespace GitHub.TreeSitter
         public TSNode named_child(uint index) { return ts_node_named_child(this, index); }
         public uint named_child_count() { return ts_node_named_child_count(this); }
         public TSNode child_by_field_name(string field_name) { return ts_node_child_by_field_name(this, field_name, (uint)field_name.Length); }
-        public TSNode child_by_field_id(ushort fieldId) { return ts_node_child_by_field_id(this,  fieldId); }
+        public TSNode child_by_field_id(ushort fieldId) { return ts_node_child_by_field_id(this, fieldId); }
         public TSNode next_sibling() { return ts_node_next_sibling(this); }
         public TSNode prev_sibling() { return ts_node_prev_sibling(this); }
         public TSNode next_named_sibling() { return ts_node_next_named_sibling(this); }
@@ -496,13 +511,14 @@ namespace GitHub.TreeSitter
         public TSNode named_descendant_for_point_range(TSPoint start, TSPoint end) { return ts_node_named_descendant_for_point_range(this, start, end); }
         public bool eq(TSNode other) { return ts_node_eq(this, other); }
 
-        public string text(string data) {
+        public string text(string data)
+        {
             uint beg = start_offset();
             uint end = end_offset();
             return data.Substring((int)beg, (int)(end - beg));
         }
 
-#region PInvoke
+        #region PInvoke
         /**
         * Get the node's type as a null-terminated string.
         */
@@ -707,7 +723,7 @@ namespace GitHub.TreeSitter
         */
         [DllImport("tree-sitter.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool ts_node_eq(TSNode node1, TSNode node2);
-#endregion
+        #endregion
     }
 
     /************************/
@@ -728,7 +744,7 @@ namespace GitHub.TreeSitter
 
         private IntPtr Ptr;
         private TSTreeCursor cursor;
-        public TSLanguage lang { get; private set;}
+        public TSLanguage lang { get; private set; }
 
         public TSCursor(TSTreeCursor cursor, TSLanguage lang)
         {
@@ -746,7 +762,8 @@ namespace GitHub.TreeSitter
 
         public void Dispose()
         {
-            if (Ptr != IntPtr.Zero) {
+            if (Ptr != IntPtr.Zero)
+            {
                 ts_tree_cursor_delete(ref cursor);
                 Ptr = IntPtr.Zero;
             }
@@ -755,7 +772,8 @@ namespace GitHub.TreeSitter
         public void reset(TSNode node) { ts_tree_cursor_reset(ref cursor, node); }
         public TSNode current_node() { return ts_tree_cursor_current_node(ref cursor); }
         public string current_field() { return lang.fields[current_field_id()]; }
-        public string current_symbol() {
+        public string current_symbol()
+        {
             ushort symbol = ts_tree_cursor_current_node(ref cursor).symbol();
             return (symbol != UInt16.MaxValue) ? lang.symbols[symbol] : "ERROR";
         }
@@ -767,7 +785,7 @@ namespace GitHub.TreeSitter
         public long goto_first_child_for_point(TSPoint point) { return ts_tree_cursor_goto_first_child_for_point(ref cursor, point); }
         public TSCursor copy() { return new TSCursor(ts_tree_cursor_copy(ref cursor), lang); }
 
-#region PInvoke
+        #region PInvoke
         /**
         * Create a new tree cursor starting from the given node.
         *
@@ -856,7 +874,7 @@ namespace GitHub.TreeSitter
 
         [DllImport("tree-sitter.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern TSTreeCursor ts_tree_cursor_copy(ref TSTreeCursor cursor);
-#endregion        
+        #endregion
     }
 
     /*******************/
@@ -874,7 +892,8 @@ namespace GitHub.TreeSitter
 
         public void Dispose()
         {
-            if (Ptr != IntPtr.Zero) {
+            if (Ptr != IntPtr.Zero)
+            {
                 ts_query_delete(Ptr);
                 Ptr = IntPtr.Zero;
             }
@@ -894,7 +913,7 @@ namespace GitHub.TreeSitter
         public void disable_capture(string captureName) { ts_query_disable_capture(Ptr, captureName, (uint)captureName.Length); }
         public void disable_pattern(uint patternIndex) { ts_query_disable_pattern(Ptr, patternIndex); }
 
-#region PInvoke
+        #region PInvoke
         [DllImport("tree-sitter.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void ts_query_delete(IntPtr query);
 
@@ -936,12 +955,12 @@ namespace GitHub.TreeSitter
 
         [DllImport("tree-sitter.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void ts_query_disable_pattern(IntPtr query, uint patternIndex);
-#endregion        
+        #endregion
     }
 
     public sealed class TSQueryCursor : IDisposable
     {
-        private IntPtr Ptr { get;  set; }
+        private IntPtr Ptr { get; set; }
 
         private TSQueryCursor(IntPtr ptr)
         {
@@ -955,7 +974,8 @@ namespace GitHub.TreeSitter
 
         public void Dispose()
         {
-            if (Ptr != IntPtr.Zero) {
+            if (Ptr != IntPtr.Zero)
+            {
                 ts_query_cursor_delete(Ptr);
                 Ptr = IntPtr.Zero;
             }
@@ -966,13 +986,17 @@ namespace GitHub.TreeSitter
         public uint match_limit() { return ts_query_cursor_match_limit(Ptr); }
         public void set_match_limit(uint limit) { ts_query_cursor_set_match_limit(Ptr, limit); }
         public void set_range(uint start, uint end) { ts_query_cursor_set_byte_range(Ptr, start * sizeof(ushort), end * sizeof(ushort)); }
-        public void set_point_range(TSPoint start,TSPoint end) { ts_query_cursor_set_point_range(Ptr, start, end); }
-        public bool next_match(out TSQueryMatch match, out TSQueryCapture[] captures) { 
+        public void set_point_range(TSPoint start, TSPoint end) { ts_query_cursor_set_point_range(Ptr, start, end); }
+        public bool next_match(out TSQueryMatch match, out TSQueryCapture[] captures)
+        {
             captures = null;
-            if (ts_query_cursor_next_match(Ptr, out match)) {
-                if (match.capture_count > 0) {
-                    captures = new TSQueryCapture [match.capture_count];
-                    for (ushort i = 0; i < match.capture_count; i++) {
+            if (ts_query_cursor_next_match(Ptr, out match))
+            {
+                if (match.capture_count > 0)
+                {
+                    captures = new TSQueryCapture[match.capture_count];
+                    for (ushort i = 0; i < match.capture_count; i++)
+                    {
                         var intPtr = match.captures + Marshal.SizeOf(typeof(TSQueryCapture)) * i;
                         captures[i] = Marshal.PtrToStructure<TSQueryCapture>(intPtr);
                     }
@@ -982,9 +1006,9 @@ namespace GitHub.TreeSitter
             return false;
         }
         public void remove_match(uint id) { ts_query_cursor_remove_match(Ptr, id); }
-        public bool next_capture(out TSQueryMatch match,out uint index) { return ts_query_cursor_next_capture(Ptr, out match, out index); }
+        public bool next_capture(out TSQueryMatch match, out uint index) { return ts_query_cursor_next_capture(Ptr, out match, out index); }
 
-#region PInvoke
+        #region PInvoke
         [DllImport("tree-sitter.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr ts_query_cursor_new();
 
@@ -992,7 +1016,7 @@ namespace GitHub.TreeSitter
         private static extern void ts_query_cursor_delete(IntPtr cursor);
 
         [DllImport("tree-sitter.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ts_query_cursor_exec(IntPtr cursor,IntPtr query,TSNode node);
+        private static extern void ts_query_cursor_exec(IntPtr cursor, IntPtr query, TSNode node);
 
         [DllImport("tree-sitter.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool ts_query_cursor_did_exceed_match_limit(IntPtr cursor);
@@ -1004,20 +1028,20 @@ namespace GitHub.TreeSitter
         private static extern void ts_query_cursor_set_match_limit(IntPtr cursor, uint limit);
 
         [DllImport("tree-sitter.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ts_query_cursor_set_byte_range(IntPtr cursor,uint start_byte,uint end_byte);
+        private static extern void ts_query_cursor_set_byte_range(IntPtr cursor, uint start_byte, uint end_byte);
 
         [DllImport("tree-sitter.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ts_query_cursor_set_point_range(IntPtr cursor,TSPoint start_point,TSPoint end_point);
+        private static extern void ts_query_cursor_set_point_range(IntPtr cursor, TSPoint start_point, TSPoint end_point);
 
         [DllImport("tree-sitter.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool ts_query_cursor_next_match(IntPtr cursor,out TSQueryMatch match);
+        private static extern bool ts_query_cursor_next_match(IntPtr cursor, out TSQueryMatch match);
 
         [DllImport("tree-sitter.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void ts_query_cursor_remove_match(IntPtr cursor,uint id);
+        private static extern void ts_query_cursor_remove_match(IntPtr cursor, uint id);
 
         [DllImport("tree-sitter.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern bool ts_query_cursor_next_capture(IntPtr cursor,out TSQueryMatch match,out uint capture_index);
-#endregion            
+        private static extern bool ts_query_cursor_next_capture(IntPtr cursor, out TSQueryMatch match, out uint capture_index);
+        #endregion
     }
 
 
@@ -1033,17 +1057,20 @@ namespace GitHub.TreeSitter
         {
             Ptr = ptr;
 
-            symbols = new String[symbol_count()+1];
-            for (ushort i = 0; i < symbols.Length; i++) {
+            symbols = new String[symbol_count() + 1];
+            for (ushort i = 0; i < symbols.Length; i++)
+            {
                 symbols[i] = Marshal.PtrToStringAnsi(ts_language_symbol_name(Ptr, i));
             }
 
-            fields = new String[field_count()+1];
-            fieldIds = new Dictionary<string, ushort>((int)field_count()+1);
+            fields = new String[field_count() + 1];
+            fieldIds = new Dictionary<string, ushort>((int)field_count() + 1);
 
-            for (ushort i = 0; i < fields.Length; i++) {
+            for (ushort i = 0; i < fields.Length; i++)
+            {
                 fields[i] = Marshal.PtrToStringAnsi(ts_language_field_name_for_id(Ptr, i));
-                if (fields[i] != null) {
+                if (fields[i] != null)
+                {
                     fieldIds.Add(fields[i], i); // TODO: check for dupes, and throw if found
                 }
             }
@@ -1065,13 +1092,15 @@ namespace GitHub.TreeSitter
 
         public void Dispose()
         {
-            if (Ptr != IntPtr.Zero) {
+            if (Ptr != IntPtr.Zero)
+            {
                 //ts_query_cursor_delete(Ptr);
                 Ptr = IntPtr.Zero;
             }
         }
 
-        public TSQuery query_new(string source, out uint error_offset, out TSQueryError error_type) {
+        public TSQuery query_new(string source, out uint error_offset, out TSQueryError error_type)
+        {
             var ptr = ts_query_new(Ptr, source, (uint)source.Length, out error_offset, out error_type);
             return ptr != IntPtr.Zero ? new TSQuery(ptr) : null;
         }
@@ -1079,7 +1108,7 @@ namespace GitHub.TreeSitter
         public String[] symbols;
         public String[] fields;
         public Dictionary<String, ushort> fieldIds;
-        
+
         public uint symbol_count() { return ts_language_symbol_count(Ptr); }
         public string symbol_name(ushort symbol) { return (symbol != UInt16.MaxValue) ? symbols[symbol] : "ERROR"; }
         public ushort symbol_for_name(string str, bool is_named) { return ts_language_symbol_for_name(Ptr, str, (uint)str.Length, is_named); }
@@ -1088,7 +1117,7 @@ namespace GitHub.TreeSitter
         public ushort field_id_for_name(string str) { return ts_language_field_id_for_name(Ptr, str, (uint)str.Length); }
         public TSSymbolType symbol_type(ushort symbol) { return ts_language_symbol_type(Ptr, symbol); }
 
-#region PInvoke
+        #region PInvoke
         /**
         * Create a new query from a string containing one or more S-expression
         * patterns. The query is associated with a particular language, and can
@@ -1157,6 +1186,6 @@ namespace GitHub.TreeSitter
         */
         [DllImport("tree-sitter.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern uint ts_language_version(IntPtr language);
-#endregion            
+        #endregion
     }
 }
