@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using GitHub.TreeSitter;
 using System.Runtime.InteropServices;
 
 namespace TreeSitter.Test
@@ -11,7 +10,7 @@ namespace TreeSitter.Test
     {
         public static TSLanguage lang = new TSLanguage(tree_sitter_cpp());
 
-        [DllImport("tree-sitter-cpp.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("tree-sitter-cpp", CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr tree_sitter_cpp();
 
         public static void PostOrderTraverse(string path, string filetext, TSCursor cursor)
@@ -85,9 +84,10 @@ namespace TreeSitter.Test
         public static bool PrintTree(List<string> paths)
         {
             bool good = true;
-            foreach (var path in paths)
+            foreach (string path in paths)
             {
-                var filetext = File.ReadAllText(path);
+                string filetext = File.ReadAllText(path);
+
                 if (!TraverseTree(path, filetext))
                 {
                     good = false;
@@ -179,7 +179,7 @@ namespace TreeSitter.Test
 
         public static void Main(string[] args)
         {
-            var files = (List<String>)null;
+            List<string> files = null;
             int a = 0;
 
             // Check if the args have at least two elements and the first one is "-files"
